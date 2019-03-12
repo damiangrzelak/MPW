@@ -1,0 +1,30 @@
+1. Mamy dwie aplikacje: klienta i serwera
+
+2. Aplikacja klienta:
+- Uruchamiana jest z dwoma parametrami: nazwa u¿ytkownika i œcie¿ka 
+do lokalnego folderu
+- Ka¿dy klient ma swój lokalny folder z plikami
+- Aplikacja obserwuje lokalny folder i patrzy na zmiany. Jak 
+pojawi¹ siê tam nowe pliki, to wysy³a je na serwer
+- Jak pojawi siê nowy plik dla danego u¿ytkownika, to jest on 
+pobierany do lokalnego folderu
+- Po w³¹czeniu patrzymy czy s¹ nowe pliki i je œci¹gamy
+- Wysy³amy / odbieramy w puli w¹tków
+
+3. Serwer:
+- 5 folderów, które symuluj¹ 5 serwerów lub 5 dysków
+- Klient wysy³a np. 10 plików, wiêc serwer uruchamia 5 w¹tków na 
+których równolegle kopiuje pliki do tych dysków (folderów)
+- Wymagany jest kontroler, który tak roz³o¿y ruch tutaj, ¿e do 
+ka¿dego z dysków (folderów) jednoczeœnie jest kopiowana taka sama liczba 
+plików
+- Je¿eli do³¹czymy drugiego klienta, który zacznie wysy³aæ pliki, 
+to nie mo¿e byæ tak, ¿e bêdzie on czeka³ jak skoñcz¹ siê zadania 
+pierwszego klienta. Lista zadañ jest mutowalna i musi byæ tworzona w 
+inteligentny sposób
+- Dla ka¿dego dysku mamy plik tekstowy (np. csv), w którym 
+opisujemy zawartoœæ i dopasowanie do u¿ytkownika
+
+Tworzymy puste pliki, czas kopiowania symulujemy usypianiem w¹tku. 
+Mo¿emy usypiaæ w¹tek np. losow¹ liczb¹ z przedzia³u 1 - 15, ¿eby 
+symulowaæ ró¿ne rozmiary plików.
