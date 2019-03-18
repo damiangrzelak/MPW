@@ -10,7 +10,7 @@ namespace ClientApp
     class Client
     {
         private static String clientName;
-        private static String pathToLocalDirectory = @"c:\DropboxApp\ClientSpace\";
+        private static String pathToLocalDirectory = @"d:\DropboxApp\ClientSpace\";
 
         static void Main(string[] args)
         {
@@ -25,9 +25,21 @@ namespace ClientApp
                 if (Directory.Exists(pathToLocalDirectory))
                 {
                     Console.WriteLine("Directory for {0}", clientName);
+                    CheckIfNewFileIsOnServer();
+
+                }
+                else
+                {
+                    Console.WriteLine("Błędna lokalizacja folderu!");
+                    return ;
                 }
 
             }
+        }
+
+        private static void CheckIfNewFileIsOnServer()
+        {
+            throw new NotImplementedException();
         }
     }
 }
