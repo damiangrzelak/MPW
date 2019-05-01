@@ -46,7 +46,7 @@ namespace ClientApp
                         fileWatcher = new FileWatcher(pathToLocalDirectory, client);
 
                         //Start observe client directory
-                        fileWatcher.CheckIfNewFileIsOnServer();
+                        fileWatcher.CheckIfNewFileIsInLocalDirectory();
 
 
                         while (!s.Equals("Exit"))

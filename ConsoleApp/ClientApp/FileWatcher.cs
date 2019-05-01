@@ -15,30 +15,34 @@ namespace ClientApp
         private TcpClient client;
         private StreamReader reader;
         private StreamWriter writer;
+        private List<String> localFiles;
 
         public FileWatcher(String pathToDirectory, TcpClient client)
         {
             this.pathToDirectory = pathToDirectory;
             this.client = client;
 
+            localFiles = new List<String>();
             fileSystemWatcher = new FileSystemWatcher();
         }
 
-       /* public List<String> GetFilesFromLocalDirecory()
+        ~FileWatcher()
         {
-            List<String> files = new List<String>();
-            files = Directory.GetFiles(pathToDirectory);
+            Console.WriteLine("Call to destructor");
+            fileSystemWatcher.Changed -= FileSystemWatcher_Created;
+            fileSystemWatcher.Dispose();
+            localFiles.Clear();
         }
-        */
 
-        public void CheckIfNewFileIsOnServer()
+        public void CheckIfNewFileIsInLocalDirectory()
         {
+            GetExistingFilesFromLocalDirectory();
+
             reader = new StreamReader(client.GetStream());
             writer = new StreamWriter(client.GetStream());
 
             // Associate event handlers with the events
             fileSystemWatcher.Created += FileSystemWatcher_Created;
-
             //fileSystemWatcher.Changed += FileSystemWatcher_Changed;
             //fileSystemWatcher.Deleted += FileSystemWatcher_Deleted;
             //fileSystemWatcher.Renamed += FileSystemWatcher_Renamed;
@@ -54,11 +58,40 @@ namespace ClientApp
 
         private void FileSystemWatcher_Created(object sender, FileSystemEventArgs e)
         {
-            Console.Write("New file ##############################");
             String str = String.Empty;
-            str = "Found new file: " + e.Name;
-            writer.WriteLine(str);
+            writer.WriteLine(e.Name);
             writer.Flush();
+            AddNewFileToList(e.Name);
+        }
+
+        private void CheckIfNewFileIsOnServer()
+        {
+            GetExistingFilesFromLocalDirectory();
+        }
+
+        private void GetExistingFilesFromLocalDirectory()
+        {
+            DirectoryInfo d = new DirectoryInfo(pathToDirectory);
+            FileInfo[] Files = d.GetFiles("*.*");
+            foreach (FileInfo file in Files)
+            {
+                localFiles.Add(file.Name);
+            }
+            PrintAllFilesFromLocalDirectory();
+        }
+
+        private void AddNewFileToList(String fileName)
+        {
+            localFiles.Add(fileName);
+        }
+
+        private void PrintAllFilesFromLocalDirectory()
+        {
+            Console.WriteLine("Files in local directory: ");
+            foreach (String fn in localFiles)
+            {
+                Console.WriteLine(fn);
+            }
         }
     }
 }
