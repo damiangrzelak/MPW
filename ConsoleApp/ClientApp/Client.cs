@@ -11,11 +11,15 @@ namespace ClientApp
 {
     class Client
     {
+        //User configuration
         private static String clientName;
         private static String pathToLocalDirectory = @"d:\DropboxApp\ClientSpace\";
 
+        //Socket configuration
         private static readonly int port = 1234;
         private static readonly String ipAdress= "127.0.0.1";
+
+        private static FileWatcher fileWatcher;
 
         static void Main(string[] args)
         {
@@ -38,8 +42,18 @@ namespace ClientApp
                         writer.WriteLine(clientName);
                         writer.Flush();
                         String s = String.Empty;
+
+                        fileWatcher = new FileWatcher(pathToLocalDirectory, client);
+
+                        //Start observe client directory
+                        fileWatcher.CheckIfNewFileIsOnServer();
+
+
                         while (!s.Equals("Exit"))
                         {
+
+
+
                             Console.Write("Enter a string to send to the server: ");
                             s = Console.ReadLine();
                             Console.WriteLine();
@@ -47,9 +61,10 @@ namespace ClientApp
                             writer.Flush();
                             String server_string = reader.ReadLine();
                             Console.WriteLine(server_string);
-                            //CheckIfNewFileIsOnServer();
 
                         }
+
+                        //close connection
                         reader.Close();
                         writer.Close();
                         client.Close();
@@ -69,9 +84,5 @@ namespace ClientApp
             }
         }
 
-        private static void CheckIfNewFileIsOnServer()
-        {
-            throw new NotImplementedException();
-        }
     }
 }

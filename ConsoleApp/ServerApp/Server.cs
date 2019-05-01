@@ -84,10 +84,9 @@ namespace ServerApp
                 clientName = reader.ReadLine();
                 Console.WriteLine("New connection from {0} ...", clientName);
 
-
                 while (!(s = reader.ReadLine()).Equals("Exit") || (s == null))
                 {
-                    Console.WriteLine("From client -> " + s);
+                    Console.WriteLine("From {0} -> " + s, clientName);
                     writer.WriteLine("From server -> " + s);
                     writer.Flush();
                 }
