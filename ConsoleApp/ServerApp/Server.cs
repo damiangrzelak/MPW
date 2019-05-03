@@ -12,37 +12,68 @@ namespace ServerApp
 {
     class Server
     {
-        private static String pathToLocalDirectory = @"d:\DropboxApp\ServerSpace\";
-        private static List<String> diskSpaceList = new List<String>()
-        {
-            "Disk1\\",
-            "Disk2\\",
-            "Disk3\\",
-            "Disk4\\",
-            "Disk5\\"
 
-        };
 
         private static readonly int port = 1234;
         private static readonly IPAddress localAddr = IPAddress.Parse("127.0.0.1");
 
+        private static List<DiskManager> diskList = new List<DiskManager>(5);
 
         static void Main(string[] args)
         {
             Console.WriteLine("Server");
 
-            foreach (String disk in diskSpaceList)
+            if (CreateDiskSpace())
+                StartServer();
+
+
+        }
+
+        private static Boolean CreateDiskSpace()
+        {
+            const String pathToLocalDirectory = @"d:\DropboxApp\ServerSpace\";
+            IReadOnlyDictionary<String, String> diskSpaceMap = new Dictionary<String, String>()
             {
-                String path = pathToLocalDirectory + disk;
-                if (!Directory.Exists(path))
+                { "Disk1\\", "disk1Files.xml"},
+                { "Disk2\\", "disk2Files.xml"},
+                { "Disk3\\", "disk3Files.xml"},
+                { "Disk4\\", "disk4Files.xml"},
+                { "Disk5\\", "disk5Files.xml"}
+            };
+
+            foreach (KeyValuePair<String, String> disk in diskSpaceMap)
+            {
+                String pathToDisk = pathToLocalDirectory + disk.Key;
+                String pathToFile = pathToDisk + disk.Value;
+                try
                 {
-                    Console.WriteLine("Create new disc space " + path);
-                    Directory.CreateDirectory(path);
+                    if (!Directory.Exists(pathToDisk))
+                    {
+                        Console.WriteLine("Create new disc space " + pathToDisk);
+                        Directory.CreateDirectory(pathToDisk);
+                    }
+
+                    if (!File.Exists(pathToFile))
+                    {
+                        Console.WriteLine("Create new xml file {0}  for {1}", disk.Value, disk.Key);
+                        CreateNewXmlFile(pathToFile);
+                    }
                 }
+                catch (Exception e )
+                {
+                    Console.WriteLine("The process failed: {0}", e.ToString());
+                    return false;
+                }
+
+                diskList.Add(new DiskManager(pathToDisk, pathToFile));
             }
-            StartServer();
 
+            return true;
+        }
 
+        private static void CreateNewXmlFile(string pathToFile)
+        {
+            XMLFileManager.CreateNewXmlFile(pathToFile);
         }
 
         private static void StartServer()
@@ -53,7 +84,7 @@ namespace ServerApp
                 tcpListener = new TcpListener(localAddr, port);
                 tcpListener.Start();
                 Console.WriteLine("Server is started... {0}::{1}", localAddr, port);
-                for(; ; )
+                for (; ; )
                 {
                     Console.WriteLine("Waiting for connections...");
                     TcpClient tcpClient = tcpListener.AcceptTcpClient();
@@ -61,7 +92,7 @@ namespace ServerApp
                     thread.Start(tcpClient);
                 }
             }
-            catch(Exception err)
+            catch (Exception err)
             {
                 Console.WriteLine(err);
             }
@@ -90,7 +121,7 @@ namespace ServerApp
                     writer.WriteLine("From server -> " + s);
                     writer.Flush();
                 }
-                
+
                 reader.Close();
                 writer.Close();
                 client.Close();
