@@ -10,7 +10,6 @@ namespace ServerApp
     {
         private String pathToDisk { get; set; }
         private String pathToFile { get; set; }
-        private XMLFileManager xmlFileManager;
 
         public DiskManager(String pathToDisk, String pathToFile)
         {
@@ -23,14 +22,20 @@ namespace ServerApp
             throw new NotImplementedException();
         }
 
-        public void WriteToFile()
+        public void WriteToFile(String username, String newFileName)
         {
+            XMLFileManager.WriteToFile(pathToFile, username, newFileName);
+        }
+
+        public void ReadFromFile(String username)
+        {
+            XMLFileManager.ReadFromFile(pathToFile, username);
 
         }
 
-        public void ReadFromFile()
+        public void GetAllUserFiles(String username)
         {
-
+            XMLFileManager.ReadFromFile(pathToFile, username);
         }
 
         public void CloseFile()

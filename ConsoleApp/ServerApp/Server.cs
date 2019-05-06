@@ -114,7 +114,11 @@ namespace ServerApp
                 String clientName = String.Empty;
                 clientName = reader.ReadLine();
                 Console.WriteLine("New connection from {0} ...", clientName);
-
+                
+                foreach(DiskManager disk in diskList)
+                {
+                    disk.GetAllUserFiles(clientName);
+                }
                 while (!(s = reader.ReadLine()).Equals("Exit") || (s == null))
                 {
                     Console.WriteLine("From {0} -> " + s, clientName);
