@@ -134,7 +134,25 @@ namespace ServerApp
 
                 while (!(s = reader.ReadLine()).Equals("Exit") || (s == null))
                 {
-                    Console.WriteLine("From {0} -> " + s, clientName);
+                    Char operation = s[0];
+                    s = s.Substring(1);
+                    switch (operation)
+                    {
+                        case 'u':
+                            Console.WriteLine("Upload file {0} for user {1}", s, clientName);
+
+                            break;
+
+                        case 'd':
+                            Console.WriteLine("Download file {0} for user {1}", s, clientName);
+                            break;
+
+                        default:
+                            Console.WriteLine("Error while read msg from{0}: {1}", clientName, s);
+                            break;
+                    }
+
+
                     writer.WriteLine("From server -> " + s);
                     writer.Flush();
                 }

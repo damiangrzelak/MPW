@@ -122,12 +122,15 @@ namespace ClientApp
         private void UploadFile(String filename)
         {
             Console.WriteLine("Upload file " + filename);
+            writer.WriteLine( "u" + filename);
+            writer.Flush();
         }
 
         private void DownloadFile(String filename)
         {
             Console.WriteLine("Download file " + filename);
-
+            writer.WriteLine("d" + filename);
+            writer.Flush();
         }
     }
 }
