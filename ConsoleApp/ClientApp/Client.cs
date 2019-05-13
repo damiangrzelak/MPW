@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -19,7 +20,7 @@ namespace ClientApp
         private static readonly int port = 1234;
         private static readonly String ipAdress= "127.0.0.1";
 
-        private static FileWatcher fileWatcher;
+        private static FileManager fileWatcher;
 
         static void Main(string[] args)
         {
@@ -43,18 +44,13 @@ namespace ClientApp
                         writer.Flush();
                         String s = String.Empty;
 
-                        fileWatcher = new FileWatcher(pathToLocalDirectory, client);
+                        fileWatcher = new FileManager(pathToLocalDirectory, client);
 
                         //Start observe client directory
                         fileWatcher.CheckIfNewFileIsInLocalDirectory();
+                        fileWatcher.CheckIfNewFileIsOnServer();
 
-
-                        while (!s.Equals("Exit"))
-                        {
-
-
-
-                            Console.Write("Enter a string to send to the server: ");
+                        Console.Write("Enter a string to send to the server: ");
                             s = Console.ReadLine();
                             Console.WriteLine();
                             writer.WriteLine(s);
@@ -62,7 +58,7 @@ namespace ClientApp
                             String server_string = reader.ReadLine();
                             Console.WriteLine(server_string);
 
-                        }
+                        
 
                         //close connection
                         reader.Close();

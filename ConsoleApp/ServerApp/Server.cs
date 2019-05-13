@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -112,13 +113,25 @@ namespace ServerApp
                 StreamWriter writer = new StreamWriter(client.GetStream());
                 String s = String.Empty;
                 String clientName = String.Empty;
+                List<String> userFiles = new List<String>();
+
                 clientName = reader.ReadLine();
                 Console.WriteLine("New connection from {0} ...", clientName);
-                
-                foreach(DiskManager disk in diskList)
+                List<String> files = new List<String>();
+
+                foreach (DiskManager disk in diskList)
                 {
-                    disk.GetAllUserFiles(clientName);
+                    List<String> diskFiles;
+                    diskFiles = disk.GetAllUserFiles(clientName);
+                    if (diskFiles != null)
+                    {
+                        files.AddRange(diskFiles);
+                    }
                 }
+                Stream stream = client.GetStream();
+                BinaryFormatter bf = new BinaryFormatter();
+                bf.Serialize(stream, files);
+
                 while (!(s = reader.ReadLine()).Equals("Exit") || (s == null))
                 {
                     Console.WriteLine("From {0} -> " + s, clientName);
@@ -128,6 +141,7 @@ namespace ServerApp
 
                 reader.Close();
                 writer.Close();
+                stream.Close();
                 client.Close();
                 Console.WriteLine("Closing client connection!");
             }

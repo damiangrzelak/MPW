@@ -41,27 +41,30 @@ namespace ServerApp
             xmlTextWriter.Close();
         }
 
-        public static void ReadFromFile(String pathToFile, String username)
+        public static List<String> GetAllFilesForUser(String pathToFile, String username)
         {
+            List<String> userFilesList = new List<String>();
             try
             {
                 XElement root = XElement.Load(pathToFile);
+                //Console.WriteLine("Checking disk {0} for user {1}", pathToFile, username);
                 if (root.Descendants("User").Any())
                 {
                     IEnumerable<XElement> userFiles = root.Descendants("User").Where(x => x.Attribute("name") != null && x.Attribute("name").Value == username).FirstOrDefault().Descendants();
-                    Console.WriteLine("Checking disk {0} for user {1}", pathToFile, username);
 
                     foreach (XElement f in userFiles)
+                    {
                         Console.WriteLine("Found file: " + f.Value);
-
-                    
+                        userFilesList.Add(f.Value);
+                    }
                 }
             }
             catch (Exception e)
             {
-                Console.WriteLine("Write to file exception: " + e);
+                Console.WriteLine("Get from file exception: " + e);
             }
 
+            return (userFilesList.Count > 0) ? userFilesList : null;
         }
 
         public static void WriteToFile(String pathToFile, String username, String newFileName)

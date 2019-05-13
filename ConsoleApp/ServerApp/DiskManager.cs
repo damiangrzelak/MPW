@@ -27,15 +27,9 @@ namespace ServerApp
             XMLFileManager.WriteToFile(pathToFile, username, newFileName);
         }
 
-        public void ReadFromFile(String username)
+        public List<String> GetAllUserFiles(String username)
         {
-            XMLFileManager.ReadFromFile(pathToFile, username);
-
-        }
-
-        public void GetAllUserFiles(String username)
-        {
-            XMLFileManager.ReadFromFile(pathToFile, username);
+            return XMLFileManager.GetAllFilesForUser(pathToFile, username);
         }
 
         public void CloseFile()

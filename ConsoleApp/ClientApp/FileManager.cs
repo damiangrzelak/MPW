@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace ClientApp
 {
-    public class FileWatcher
+    public class FileManager
     {
         private String pathToDirectory;
         private FileSystemWatcher fileSystemWatcher;
@@ -16,21 +17,22 @@ namespace ClientApp
         private StreamReader reader;
         private StreamWriter writer;
         private List<String> localFiles;
+        private NetworkStream networkStream;
 
-        public FileWatcher(String pathToDirectory, TcpClient client)
+        public FileManager(String pathToDirectory, TcpClient client)
         {
             this.pathToDirectory = pathToDirectory;
             this.client = client;
-
+            this.networkStream = client.GetStream();
             localFiles = new List<String>();
             fileSystemWatcher = new FileSystemWatcher();
         }
 
-        ~FileWatcher()
+        ~FileManager()
         {
-            Console.WriteLine("Call to destructor");
             fileSystemWatcher.Changed -= FileSystemWatcher_Created;
             fileSystemWatcher.Dispose();
+            networkStream.Close();
             localFiles.Clear();
         }
 
@@ -64,13 +66,36 @@ namespace ClientApp
             AddNewFileToList(e.Name);
         }
 
-        private void CheckIfNewFileIsOnServer()
+        public void CheckIfNewFileIsOnServer()
         {
-            GetExistingFilesFromLocalDirectory();
+            BinaryFormatter formatter = new BinaryFormatter();
+            List<String> filesOnServer;
+
+            filesOnServer = (List<string>)formatter.Deserialize(networkStream);
+            //foreach (String f in filesOnServer)
+            //{
+            //    Console.WriteLine("File on server " + f);
+            //}
+
+            List<String> filesToDownload = filesOnServer.Except(localFiles).ToList();
+            List<String> fielsToUpload = localFiles.Except(filesOnServer).ToList();
+
+            if (filesToDownload != null)
+            {
+                foreach (String f in filesToDownload)
+                    DownloadFile(f);
+            }
+
+            if (fielsToUpload != null)
+            {
+                foreach (String f in fielsToUpload)
+                    UploadFile(f);
+            }
         }
 
         private void GetExistingFilesFromLocalDirectory()
         {
+            localFiles.Clear();
             DirectoryInfo d = new DirectoryInfo(pathToDirectory);
             FileInfo[] Files = d.GetFiles("*.*");
             foreach (FileInfo file in Files)
@@ -92,6 +117,17 @@ namespace ClientApp
             {
                 Console.WriteLine(fn);
             }
+        }
+
+        private void UploadFile(String filename)
+        {
+            Console.WriteLine("Upload file " + filename);
+        }
+
+        private void DownloadFile(String filename)
+        {
+            Console.WriteLine("Download file " + filename);
+
         }
     }
 }
