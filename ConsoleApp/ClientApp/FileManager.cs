@@ -60,6 +60,7 @@ namespace ClientApp
 
         private void FileSystemWatcher_Created(object sender, FileSystemEventArgs e)
         {
+            Console.WriteLine("New file created" + e.Name);
             String str = String.Empty;
             writer.WriteLine(e.Name);
             writer.Flush();

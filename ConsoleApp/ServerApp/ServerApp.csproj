@@ -43,6 +43,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DiskManager.cs" />
+    <Compile Include="ServerFile.cs" />
+    <Compile Include="ResourceManager.cs" />
     <Compile Include="Server.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="XMLFileManager.cs" />

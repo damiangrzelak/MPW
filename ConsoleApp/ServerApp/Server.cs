@@ -17,66 +17,18 @@ namespace ServerApp
 
         private static readonly int port = 1234;
         private static readonly IPAddress localAddr = IPAddress.Parse("127.0.0.1");
-
-        private static List<DiskManager> diskList = new List<DiskManager>(5);
+        private static ResourceManager resourceManager;
 
         static void Main(string[] args)
         {
             Console.WriteLine("Server");
+            resourceManager = ResourceManager.Instance;
 
-            if (CreateDiskSpace())
+            //Create server disk if don't exist
+            if (resourceManager.CreateDiskSpace())
                 StartServer();
-
-
         }
-
-        private static Boolean CreateDiskSpace()
-        {
-            const String pathToLocalDirectory = @"d:\DropboxApp\ServerSpace\";
-            IReadOnlyDictionary<String, String> diskSpaceMap = new Dictionary<String, String>()
-            {
-                { "Disk1\\", "disk1Files.xml"},
-                { "Disk2\\", "disk2Files.xml"},
-                { "Disk3\\", "disk3Files.xml"},
-                { "Disk4\\", "disk4Files.xml"},
-                { "Disk5\\", "disk5Files.xml"}
-            };
-
-            foreach (KeyValuePair<String, String> disk in diskSpaceMap)
-            {
-                String pathToDisk = pathToLocalDirectory + disk.Key;
-                String pathToFile = pathToDisk + disk.Value;
-                try
-                {
-                    if (!Directory.Exists(pathToDisk))
-                    {
-                        Console.WriteLine("Create new disc space " + pathToDisk);
-                        Directory.CreateDirectory(pathToDisk);
-                    }
-
-                    if (!File.Exists(pathToFile))
-                    {
-                        Console.WriteLine("Create new xml file {0}  for {1}", disk.Value, disk.Key);
-                        CreateNewXmlFile(pathToFile);
-                    }
-                }
-                catch (Exception e )
-                {
-                    Console.WriteLine("The process failed: {0}", e.ToString());
-                    return false;
-                }
-
-                diskList.Add(new DiskManager(pathToDisk, pathToFile));
-            }
-
-            return true;
-        }
-
-        private static void CreateNewXmlFile(string pathToFile)
-        {
-            XMLFileManager.CreateNewXmlFile(pathToFile);
-        }
-
+    
         private static void StartServer()
         {
             TcpListener tcpListener = null;
@@ -111,55 +63,49 @@ namespace ServerApp
             {
                 StreamReader reader = new StreamReader(client.GetStream());
                 StreamWriter writer = new StreamWriter(client.GetStream());
-                String s = String.Empty;
+                String fileName = String.Empty;
                 String clientName = String.Empty;
                 List<String> userFiles = new List<String>();
 
                 clientName = reader.ReadLine();
                 Console.WriteLine("New connection from {0} ...", clientName);
-                List<String> files = new List<String>();
+                List<String> files = resourceManager.GetAllUserFiles(clientName);
 
-                foreach (DiskManager disk in diskList)
+                if (files != null)
                 {
-                    List<String> diskFiles;
-                    diskFiles = disk.GetAllUserFiles(clientName);
-                    if (diskFiles != null)
-                    {
-                        files.AddRange(diskFiles);
-                    }
+                    Stream stream = client.GetStream();
+                    BinaryFormatter bf = new BinaryFormatter();
+                    bf.Serialize(stream, files);
                 }
-                Stream stream = client.GetStream();
-                BinaryFormatter bf = new BinaryFormatter();
-                bf.Serialize(stream, files);
 
-                while (!(s = reader.ReadLine()).Equals("Exit") || (s == null))
+                while (!(fileName = reader.ReadLine()).Equals("Exit") || (fileName == null))
                 {
-                    Char operation = s[0];
-                    s = s.Substring(1);
+                    Char operation = fileName[0];
+                    fileName = fileName.Substring(1);
                     switch (operation)
                     {
                         case 'u':
-                            Console.WriteLine("Upload file {0} for user {1}", s, clientName);
-
+                            Console.WriteLine("Upload file {0} for user {1}", fileName, clientName);
+                            resourceManager.UploadFile(fileName, clientName);
                             break;
 
                         case 'd':
-                            Console.WriteLine("Download file {0} for user {1}", s, clientName);
+                            Console.WriteLine("Download file {0} for user {1}", fileName, clientName);
+                            resourceManager.DownloadFile(fileName, clientName);
                             break;
 
                         default:
-                            Console.WriteLine("Error while read msg from{0}: {1}", clientName, s);
+                            Console.WriteLine("Error while read msg from{0}: {1}", clientName, fileName);
                             break;
                     }
 
 
-                    writer.WriteLine("From server -> " + s);
+                    //writer.WriteLine("From server -> " + );
                     writer.Flush();
                 }
 
                 reader.Close();
                 writer.Close();
-                stream.Close();
                 client.Close();
                 Console.WriteLine("Closing client connection!");
             }

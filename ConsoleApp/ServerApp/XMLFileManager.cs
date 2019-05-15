@@ -67,7 +67,7 @@ namespace ServerApp
             return (userFilesList.Count > 0) ? userFilesList : null;
         }
 
-        public static void WriteToFile(String pathToFile, String username, String newFileName)
+        public static void WriteToFile(String pathToXMLFile, String username, String newFileName)
         {
 
         }

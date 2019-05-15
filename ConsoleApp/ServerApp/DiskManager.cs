@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ServerApp
@@ -9,32 +10,26 @@ namespace ServerApp
     class DiskManager
     {
         private String pathToDisk { get; set; }
-        private String pathToFile { get; set; }
+        private String pathToXMLFile { get; set; }
 
-        public DiskManager(String pathToDisk, String pathToFile)
+        public DiskManager(String pathToDisk, String pathToXMLFile)
         {
             this.pathToDisk = pathToDisk;
-            this.pathToFile = pathToFile;
+            this.pathToXMLFile = pathToXMLFile;
         }
 
-        public Boolean OpenFile()
+        public void WriteToFile(ServerFile file)
         {
-            throw new NotImplementedException();
-        }
+            Console.WriteLine("Sleep for {0}ms", file.size);
+            Thread.Sleep(file.size);
+            Console.WriteLine("End Sleep");
 
-        public void WriteToFile(String username, String newFileName)
-        {
-            XMLFileManager.WriteToFile(pathToFile, username, newFileName);
+            XMLFileManager.WriteToFile(pathToXMLFile, file.owner, file.fileName);
         }
 
         public List<String> GetAllUserFiles(String username)
         {
-            return XMLFileManager.GetAllFilesForUser(pathToFile, username);
-        }
-
-        public void CloseFile()
-        {
-
+            return XMLFileManager.GetAllFilesForUser(pathToXMLFile, username);
         }
     }
 }
