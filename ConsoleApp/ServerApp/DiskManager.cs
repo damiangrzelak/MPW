@@ -24,12 +24,12 @@ namespace ServerApp
             Thread.Sleep(file.size);
             Console.WriteLine("End Sleep");
 
-            XMLFileManager.WriteToFile(pathToXMLFile, file.owner, file.fileName);
+            CSVFileManager.WriteToCSVFile(pathToXMLFile, file.owner, file.fileName);
         }
 
         public List<String> GetAllUserFiles(String username)
         {
-            return XMLFileManager.GetAllFilesForUser(pathToXMLFile, username);
+            return CSVFileManager.GetAllUserFiles(pathToXMLFile, username);
         }
     }
 }

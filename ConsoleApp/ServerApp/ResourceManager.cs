@@ -60,11 +60,11 @@ namespace ServerApp
             const String pathToLocalDirectory = @"d:\DropboxApp\ServerSpace\";
             IReadOnlyDictionary<String, String> diskSpaceMap = new Dictionary<String, String>()
             {
-                { "Disk1\\", "disk1Files.xml"},
-                { "Disk2\\", "disk2Files.xml"},
-                { "Disk3\\", "disk3Files.xml"},
-                { "Disk4\\", "disk4Files.xml"},
-                { "Disk5\\", "disk5Files.xml"}
+                { "Disk1\\", "disk1Files.csv"},
+                { "Disk2\\", "disk2Files.csv"},
+                { "Disk3\\", "disk3Files.csv"},
+                { "Disk4\\", "disk4Files.csv"},
+                { "Disk5\\", "disk5Files.csv"}
             };
 
             foreach (KeyValuePair<String, String> disk in diskSpaceMap)
@@ -81,8 +81,8 @@ namespace ServerApp
 
                     if (!File.Exists(pathToFile))
                     {
-                        Console.WriteLine("Create new xml file {0}  for {1}", disk.Value, disk.Key);
-                        XMLFileManager.CreateNewXmlFile(pathToFile);
+                        Console.WriteLine("Create new CSV file {0}  for {1}", disk.Value, disk.Key);
+                        CSVFileManager.CreateNewCSVFile(pathToFile);
                     }
                 }
                 catch (Exception e)
