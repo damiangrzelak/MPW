@@ -20,11 +20,8 @@ namespace ServerApp
 
         public void WriteToFile(ServerFile file)
         {
-            Console.WriteLine("Sleep for {0}ms", file.size);
-            Thread.Sleep(file.size);
-            Console.WriteLine("End Sleep");
-
-            CSVFileManager.WriteToCSVFile(pathToXMLFile, file.owner, file.fileName);
+            Console.WriteLine("Write to disk:: {0} file:: {1} owner:: {2}", pathToXMLFile, file.owner, file.fileName);
+            //CSVFileManager.WriteToCSVFile(pathToXMLFile, file.owner, file.fileName);
         }
 
         public List<String> GetAllUserFiles(String username)

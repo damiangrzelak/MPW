@@ -18,7 +18,7 @@ namespace ServerApp
             rnd = new Random();
             this.fileName = fileName;
             this.owner = owner;
-            size = rnd.Next(1000, 20000);
+            size = rnd.Next(1000, 10000);
             Console.WriteLine("Create file {0}, owner {1} size {2}", fileName, owner, size);
         }
     }

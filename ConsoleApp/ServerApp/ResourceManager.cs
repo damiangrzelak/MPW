@@ -19,34 +19,69 @@ namespace ServerApp
             }
         }
 
-        private List<DiskManager> diskList = new List<DiskManager>(5);
+        private static List<DiskManager> diskList = new List<DiskManager>(5);
+        private static Thread[] writeThreads = new Thread[5];
+        protected static object _lock = new object();
 
-        private List<ServerFile> filesToUpload = new List<ServerFile>();
-        private List<ServerFile> filesToDownload = new List<ServerFile>();
+        private static List<ServerFile> filesToUpload = new List<ServerFile>();
+        private static List<ServerFile> filesToDownload = new List<ServerFile>();
 
-        public void UploadFile(String fileName, String userName)
+        public void UploadFile(String filename, String username)
         {
-            filesToUpload.Add(new ServerFile(fileName, userName));
-           
-            Thread t = new Thread(() => diskList.ElementAt(0).WriteToFile(filesToUpload.ElementAt(0)));
-            t.Start();
-            t.Join();
-        }
-
-        public void DownloadFile(String fileName, String userName)
-        {
-            filesToDownload.Add(new ServerFile(fileName, userName));
+            lock (_lock)
+            {
+                filesToUpload.Add(new ServerFile(filename, username));
+            }
         }
 
 
+        private static void WriteResourceHandler()
+        {
+            Console.WriteLine("Write Resource Handler Start Working");
+            while (true)
+            {
+                if (filesToUpload.Count > 0)
+                {
+                    lock (_lock)
+                    {
 
-        public List<String> GetAllUserFiles(String userName)
+                    }
+                    //Console.WriteLine("Sleep for {0}ms", file.size);
+                    //Thread.Sleep(file.size);
+                    //Console.WriteLine("End Sleep");
+                    //Thread t = new Thread(() => diskList.ElementAt(0).WriteToFile(filesToUpload.ElementAt(0)));
+                    //t.Start();
+                    //t.Join();
+                }
+
+            }
+
+        }
+
+
+        public void DownloadFile(String filename, String username)
+        {
+            ServerFile fileToDownload =  new ServerFile(filename, username));
+
+            Thread thread = new Thread(ReadResourceHandler);
+            thread.Start(fileToDownload);
+            thread.Join();
+        }
+
+        private static void ReadResourceHandler(object fileToDownload)
+        {
+            ServerFile file = (ServerFile)fileToDownload;
+
+            Console.WriteLine("Download file:: {0} for user::{1}", file.fileName, file.owner);
+        }
+
+        public List<String> GetAllUserFiles(String username)
         {
             List<String> files = new List<string>();
             foreach (DiskManager disk in diskList)
             {
                 List<String> diskFiles;
-                diskFiles = disk.GetAllUserFiles(userName);
+                diskFiles = disk.GetAllUserFiles(username);
                 if (diskFiles != null)
                 {
                     files.AddRange(diskFiles);
@@ -93,7 +128,8 @@ namespace ServerApp
 
                 diskList.Add(new DiskManager(pathToDisk, pathToFile));
             }
-
+            Thread thread = new Thread(WriteResourceHandler);
+            thread.Start();
             return true;
         }
     }

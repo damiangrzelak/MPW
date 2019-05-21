@@ -57,7 +57,7 @@ namespace ClientApp
                             writer.Flush();
                             String server_string = reader.ReadLine();
                             Console.WriteLine(server_string);
-
+                        //TO do download file
                         
 
                         //close connection

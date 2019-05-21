@@ -31,8 +31,9 @@ namespace ServerApp
 
                 String files = values.Where(x => x[0].Equals(username))
                                     .Select(x => x[1])
-                                    .First();
-                userFilesList = files.Split(',').ToList();
+                                    .FirstOrDefault();
+                if (files != null)
+                    userFilesList = files.Split(',').ToList();
 
             }
             catch (Exception e)
@@ -47,25 +48,33 @@ namespace ServerApp
         {
             try
             {
-                //TO DO
-                var values = File.ReadLines(pathToCSVFile)
-                .Skip(1)
-                .Select(line => line.Split(';'))
-                .ToList();
+                string[] lines = new string[0];
+                lines = File.ReadAllLines(pathToCSVFile);
 
-                String files = values.Where(x => x[0].Equals(username))
-                                    .Select(x => x[1])
-                                    .FirstOrDefault();
-                if (files != null)
+                StringBuilder newLines = new StringBuilder();
+                bool userExist = false;
+
+                foreach (var line in lines)
                 {
-                    files += "," + newFileName;
+                    string[] parts = line.Split(';');
+                    if (parts.Length == 2 && parts[0].Equals(username))
+                    {
+                        parts[1] += "," + newFileName;
+                        newLines.AppendLine(String.Format("{0};{1}", username, parts[1]));
+                        userExist = true;
+                    }
+                    else
+                    {
+                        newLines.AppendLine(line.Trim());
+                    }
                 }
-                else
+
+                if (!userExist)
                 {
-                    StringBuilder content = new StringBuilder();
-                    content.AppendLine(username + ";" + newFileName);
-                    File.AppendAllText(pathToCSVFile, content.ToString());
+                    newLines.AppendLine(String.Format("{0};{1}", username, newFileName));
                 }
+
+                File.WriteAllText(pathToCSVFile, newLines.ToString());
             }
             catch (Exception e)
             {

@@ -92,6 +92,7 @@ namespace ServerApp
                         case 'd':
                             Console.WriteLine("Download file {0} for user {1}", fileName, clientName);
                             resourceManager.DownloadFile(fileName, clientName);
+                            writer.WriteLine("n" + fileName);
                             break;
 
                         default:
