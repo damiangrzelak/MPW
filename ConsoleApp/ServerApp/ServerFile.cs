@@ -11,15 +11,13 @@ namespace ServerApp
         public String fileName { get; set; }
         public String owner { get; set; }
         public int size { get; set; }
-        private Random rnd;
 
         public ServerFile(string fileName, String owner)
         {
-            rnd = new Random();
             this.fileName = fileName;
             this.owner = owner;
-            size = rnd.Next(1000, 10000);
-            Console.WriteLine("Create file {0}, owner {1} size {2}", fileName, owner, size);
+            size = new Random().Next(1000, 10000);
+            Console.WriteLine("New file on server file {0}, owner {1} size {2}", fileName, owner, size);
         }
     }
 }

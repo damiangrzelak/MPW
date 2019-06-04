@@ -20,17 +20,32 @@ namespace ServerApp
         }
 
         private static List<DiskManager> diskList = new List<DiskManager>(5);
-        private static Thread[] writeThreads = new Thread[5];
         protected static object _lock = new object();
 
-        private static List<ServerFile> filesToUpload = new List<ServerFile>();
         private static List<ServerFile> filesToDownload = new List<ServerFile>();
+        private static Dictionary<String, List<ServerFile>> filesToUpload = new Dictionary<string, List<ServerFile>>();
+        private static Queue<ServerFile> smallFileSize = new Queue<ServerFile>();
+        private static Queue<ServerFile> mediumFileSize = new Queue<ServerFile>();
+        private static Queue<ServerFile> largeFileSize = new Queue<ServerFile>();
 
         public void UploadFile(String filename, String username)
         {
             lock (_lock)
             {
-                filesToUpload.Add(new ServerFile(filename, username));
+                List<ServerFile> temp = new List<ServerFile>();
+                ServerFile newFile = new ServerFile(filename, username);
+                
+                if (filesToUpload.ContainsKey(username))
+                {
+                    temp = filesToUpload[username];
+                    temp.Add(newFile);
+                    filesToUpload[username] = temp;
+                }
+                else
+                {
+                    temp.Add(newFile);
+                    filesToUpload.Add(username, temp);
+                }
             }
         }
 
@@ -40,18 +55,21 @@ namespace ServerApp
             Console.WriteLine("Write Resource Handler Start Working");
             while (true)
             {
+                String pathToFile = "";
                 if (filesToUpload.Count > 0)
                 {
                     lock (_lock)
                     {
+                        foreach (DiskManager d in diskList)
+                        {
+                            if (!d.thread.IsAlive)
+                            {
+                              
 
+                                d.thread.Start(pathToFile);
+                            }
+                        }
                     }
-                    //Console.WriteLine("Sleep for {0}ms", file.size);
-                    //Thread.Sleep(file.size);
-                    //Console.WriteLine("End Sleep");
-                    //Thread t = new Thread(() => diskList.ElementAt(0).WriteToFile(filesToUpload.ElementAt(0)));
-                    //t.Start();
-                    //t.Join();
                 }
 
             }
@@ -61,7 +79,7 @@ namespace ServerApp
 
         public void DownloadFile(String filename, String username)
         {
-            ServerFile fileToDownload =  new ServerFile(filename, username));
+            ServerFile fileToDownload = new ServerFile(filename, username);
 
             Thread thread = new Thread(ReadResourceHandler);
             thread.Start(fileToDownload);
@@ -71,7 +89,6 @@ namespace ServerApp
         private static void ReadResourceHandler(object fileToDownload)
         {
             ServerFile file = (ServerFile)fileToDownload;
-
             Console.WriteLine("Download file:: {0} for user::{1}", file.fileName, file.owner);
         }
 
