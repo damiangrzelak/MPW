@@ -15,16 +15,19 @@ namespace ServerApp
 
         public DiskManager(String pathToDisk, String pathToXMLFile)
         {
-            this.thread = new Thread(WriteToFile);
+            thread = new Thread(WriteToFile);
             this.pathToDisk = pathToDisk;
             this.pathToXMLFile = pathToXMLFile;
         }
 
-        private void WriteToFile(object file)
+        public void WriteToFile(object file)
         {
             ServerFile f = (ServerFile)file;
-            Console.WriteLine("[DM INFO] Write to disk:: {0} file:: {1} owner:: {2}", pathToXMLFile, f.owner, f.fileName);
-            //CSVFileManager.WriteToCSVFile(pathToXMLFile, f.owner, f.fileName);
+            Console.WriteLine("[DM INFO] Write to disk:: {0} file:: {1} owner:: {2} size::{3}", pathToXMLFile, f.owner, f.fileName, f.size);
+            Thread.Sleep(f.size);
+            CSVFileManager.WriteToCSVFile(pathToXMLFile, f.owner, f.fileName);
+            Console.WriteLine("[DM INFO] File {0} saved.", f.fileName);
+            thread = new Thread(WriteToFile);
         }
 
         public List<String> GetAllUserFiles(String username)

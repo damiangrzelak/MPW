@@ -38,15 +38,14 @@ namespace ServerApp
             }
         }
 
-
         private static void WriteResourceHandler()
         {
-            Console.WriteLine("[RM INFO] Write Resource Handler Start Working");
+            Console.WriteLine("[INFO RM] Write Resource Handler Start Working");
             while (true)
             {
                 foreach (DiskManager d in diskList)
                 {
-                    if (!d.thread.IsAlive)
+                    if (d.thread.ThreadState == ThreadState.Unstarted)
                     {
                         if (smallFileSize.Count > 0)
                         {
@@ -62,23 +61,6 @@ namespace ServerApp
                         }
                     }
                 }
-
-                //if (filesToUpload.Count > 0)
-                //{
-                //    lock (_lock)
-                //    {
-                //        foreach (DiskManager d in diskList)
-                //        {
-                //            if (!d.thread.IsAlive)
-                //            {
-
-
-                //                d.thread.Start(pathToFile);
-                //            }
-                //        }
-                //    }
-                //}
-
             }
 
         }
@@ -96,7 +78,7 @@ namespace ServerApp
         private static void ReadResourceHandler(object fileToDownload)
         {
             ServerFile file = (ServerFile)fileToDownload;
-            Console.WriteLine("Download file:: {0} for user::{1}", file.fileName, file.owner);
+            Console.WriteLine("[INFO RM] Download file:: {0} for user::{1}", file.fileName, file.owner);
         }
 
         public List<String> GetAllUserFiles(String username)
@@ -134,19 +116,19 @@ namespace ServerApp
                 {
                     if (!Directory.Exists(pathToDisk))
                     {
-                        Console.WriteLine("Create new disc space " + pathToDisk);
+                        Console.WriteLine("[INFO RM] Create new disc space " + pathToDisk);
                         Directory.CreateDirectory(pathToDisk);
                     }
 
                     if (!File.Exists(pathToFile))
                     {
-                        Console.WriteLine("Create new CSV file {0}  for {1}", disk.Value, disk.Key);
+                        Console.WriteLine("[INFO RM] Create new CSV file {0}  for {1}", disk.Value, disk.Key);
                         CSVFileManager.CreateNewCSVFile(pathToFile);
                     }
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine("The process failed: {0}", e.ToString());
+                    Console.WriteLine("[ERROR RM] The process failed: {0}", e.ToString());
                     return false;
                 }
 

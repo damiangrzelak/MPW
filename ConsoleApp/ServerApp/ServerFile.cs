@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ServerApp
@@ -17,7 +18,8 @@ namespace ServerApp
             this.fileName = fileName;
             this.owner = owner;
             size = new Random().Next(1000, 15000);
-            Console.WriteLine("New file on server file {0}, owner {1} size {2}", fileName, owner, size);
+            Console.WriteLine("[INFO SF] New file on server file {0}, owner {1} size {2}", fileName, owner, size);
+            Thread.Sleep(100);
         }
     }
 }

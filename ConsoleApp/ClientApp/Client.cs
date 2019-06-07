@@ -18,19 +18,18 @@ namespace ClientApp
 
         //Socket configuration
         private static readonly int port = 1234;
-        private static readonly String ipAdress= "127.0.0.1";
+        private static readonly String ipAdress = "127.0.0.1";
 
         private static FileManager fileWatcher;
 
         static void Main(string[] args)
         {
-            Console.WriteLine("Client");
             if (args.Length == 2)
             {
                 clientName = args[0];
                 pathToLocalDirectory += args[1];
 
-                Console.WriteLine("User {0} localDir = {1}", clientName, pathToLocalDirectory);
+                Console.WriteLine("[INFO Client] User {0} localDir = {1}", clientName, pathToLocalDirectory);
 
                 if (Directory.Exists(pathToLocalDirectory))
                 {
@@ -51,14 +50,14 @@ namespace ClientApp
                         fileWatcher.CheckIfNewFileIsOnServer();
 
                         Console.Write("Enter a string to send to the server: ");
-                            s = Console.ReadLine();
-                            Console.WriteLine();
-                            writer.WriteLine(s);
-                            writer.Flush();
-                            String server_string = reader.ReadLine();
-                            Console.WriteLine(server_string);
+                        s = Console.ReadLine();
+                        Console.WriteLine();
+                        writer.WriteLine(s);
+                        writer.Flush();
+                        String server_string = reader.ReadLine();
+                        Console.WriteLine(server_string);
                         //TO do download file
-                        
+
 
                         //close connection
                         reader.Close();
@@ -74,7 +73,7 @@ namespace ClientApp
                 else
                 {
                     Console.WriteLine("Błędna lokalizacja folderu!");
-                    return ;
+                    return;
                 }
 
             }

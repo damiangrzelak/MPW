@@ -3,14 +3,16 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
-using System.Xml;
-using System.Xml.Linq;
 
 namespace ServerApp
 {
     class CSVFileManager
     {
+        static ReaderWriterLock readerWriterLock = new ReaderWriterLock();
+        private static readonly int timeout = 20000;
+
         public static void CreateNewCSVFile(String pathToFile)
         {
             StringBuilder content = new StringBuilder();
@@ -22,24 +24,37 @@ namespace ServerApp
         public static List<String> GetAllUserFiles(String pathToCSVFile, String username)
         {
             List<String> userFilesList = new List<String>();
+            List<String[]> values = new List<string[]>();
             try
             {
-                var values = File.ReadLines(pathToCSVFile)
-                 .Skip(1)
-                 .Select(line => line.Split(';'))
-                 .ToList();
+                readerWriterLock.AcquireReaderLock(timeout);
+                try
+                {
+                    values = File.ReadLines(pathToCSVFile)
+                     .Skip(1)
+                     .Select(line => line.Split(';'))
+                     .ToList();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("[ERROR I/O] Get from file exception: " + e);
+                }
 
-                String files = values.Where(x => x[0].Equals(username))
-                                    .Select(x => x[1])
-                                    .FirstOrDefault();
-                if (files != null)
-                    userFilesList = files.Split(',').ToList();
-
+                finally
+                {
+                    readerWriterLock.ReleaseReaderLock();
+                }
             }
-            catch (Exception e)
+            catch (ApplicationException ex)
             {
-                Console.WriteLine("Get from file exception: " + e);
+                Console.WriteLine(ex.Message);
             }
+
+            String files = values.Where(x => x[0].Equals(username))
+                                            .Select(x => x[1])
+                                            .FirstOrDefault();
+            if (files != null)
+                userFilesList = files.Split(',').ToList();
 
             return (userFilesList.Count > 0) ? userFilesList : null;
         }
@@ -48,37 +63,49 @@ namespace ServerApp
         {
             try
             {
-                string[] lines = new string[0];
-                lines = File.ReadAllLines(pathToCSVFile);
-
-                StringBuilder newLines = new StringBuilder();
-                bool userExist = false;
-
-                foreach (var line in lines)
+                readerWriterLock.AcquireWriterLock(timeout);
+                try
                 {
-                    string[] parts = line.Split(';');
-                    if (parts.Length == 2 && parts[0].Equals(username))
-                    {
-                        parts[1] += "," + newFileName;
-                        newLines.AppendLine(String.Format("{0};{1}", username, parts[1]));
-                        userExist = true;
-                    }
-                    else
-                    {
-                        newLines.AppendLine(line.Trim());
-                    }
-                }
+                    string[] lines = new string[0];
+                    lines = File.ReadAllLines(pathToCSVFile);
 
-                if (!userExist)
+                    StringBuilder newLines = new StringBuilder();
+                    bool userExist = false;
+
+                    foreach (var line in lines)
+                    {
+                        string[] parts = line.Split(';');
+                        if (parts.Length == 2 && parts[0].Equals(username))
+                        {
+                            parts[1] += "," + newFileName;
+                            newLines.AppendLine(String.Format("{0};{1}", username, parts[1]));
+                            userExist = true;
+                        }
+                        else
+                        {
+                            newLines.AppendLine(line.Trim());
+                        }
+                    }
+
+                    if (!userExist)
+                    {
+                        newLines.AppendLine(String.Format("{0};{1}", username, newFileName));
+                    }
+
+                    File.WriteAllText(pathToCSVFile, newLines.ToString());
+                }
+                catch (ApplicationException ex)
                 {
-                    newLines.AppendLine(String.Format("{0};{1}", username, newFileName));
+                    Console.WriteLine("[ERROR I/O] Access to file exception: " + ex);
                 }
-
-                File.WriteAllText(pathToCSVFile, newLines.ToString());
+                finally
+                {
+                    readerWriterLock.ReleaseWriterLock();
+                }
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Console.WriteLine("Write to file exception: " + e);
+                Console.WriteLine("[ERROR I/O] Write to file exception: " + ex);
             }
         }
     }

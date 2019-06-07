@@ -4,8 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Net.Sockets;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ClientApp
 {
@@ -55,12 +53,12 @@ namespace ClientApp
             // Allows events to fire.
             fileSystemWatcher.EnableRaisingEvents = true;
 
-            Console.WriteLine("Start observe {0}", pathToDirectory);
+            Console.WriteLine("INFO [FM] Start observe {0}", pathToDirectory);
         }
 
         private void FileSystemWatcher_Created(object sender, FileSystemEventArgs e)
         {
-            Console.WriteLine("New file created" + e.Name);
+            Console.WriteLine("INFO [FM] New file created" + e.Name);
             String str = String.Empty;
             writer.WriteLine(e.Name);
             writer.Flush();
@@ -73,10 +71,6 @@ namespace ClientApp
             List<String> filesOnServer;
 
             filesOnServer = (List<string>)formatter.Deserialize(networkStream);
-            //foreach (String f in filesOnServer)
-            //{
-            //    Console.WriteLine("File on server " + f);
-            //}
 
             List<String> filesToDownload = filesOnServer.Except(localFiles).ToList();
             List<String> fielsToUpload = localFiles.Except(filesOnServer).ToList();
@@ -113,7 +107,7 @@ namespace ClientApp
 
         private void PrintAllFilesFromLocalDirectory()
         {
-            Console.WriteLine("Files in local directory: ");
+            Console.WriteLine("INFO [FM] Files in local directory: ");
             foreach (String fn in localFiles)
             {
                 Console.WriteLine(fn);
@@ -122,14 +116,14 @@ namespace ClientApp
 
         private void UploadFile(String filename)
         {
-            Console.WriteLine("Upload file " + filename);
+            Console.WriteLine("INFO [FM] Upload file " + filename);
             writer.WriteLine( "u" + filename);
             writer.Flush();
         }
 
         private void DownloadFile(String filename)
         {
-            Console.WriteLine("Download file " + filename);
+            Console.WriteLine("INFO [FM] Download file " + filename);
             writer.WriteLine("d" + filename);
             writer.Flush();
         }
