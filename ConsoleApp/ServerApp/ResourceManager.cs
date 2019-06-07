@@ -23,7 +23,6 @@ namespace ServerApp
         protected static object _lock = new object();
 
         private static List<ServerFile> filesToDownload = new List<ServerFile>();
-        private static Dictionary<String, List<ServerFile>> filesToUpload = new Dictionary<string, List<ServerFile>>();
         private static Queue<ServerFile> smallFileSize = new Queue<ServerFile>();
         private static Queue<ServerFile> mediumFileSize = new Queue<ServerFile>();
         private static Queue<ServerFile> largeFileSize = new Queue<ServerFile>();
@@ -32,45 +31,53 @@ namespace ServerApp
         {
             lock (_lock)
             {
-                List<ServerFile> temp = new List<ServerFile>();
                 ServerFile newFile = new ServerFile(filename, username);
-                
-                if (filesToUpload.ContainsKey(username))
-                {
-                    temp = filesToUpload[username];
-                    temp.Add(newFile);
-                    filesToUpload[username] = temp;
-                }
-                else
-                {
-                    temp.Add(newFile);
-                    filesToUpload.Add(username, temp);
-                }
+                if (newFile.size < 6) smallFileSize.Enqueue(newFile);
+                else if (newFile.size >= 6 && newFile.size < 11) mediumFileSize.Enqueue(newFile);
+                else largeFileSize.Enqueue(newFile);
             }
         }
 
 
         private static void WriteResourceHandler()
         {
-            Console.WriteLine("Write Resource Handler Start Working");
+            Console.WriteLine("[RM INFO] Write Resource Handler Start Working");
             while (true)
             {
-                String pathToFile = "";
-                if (filesToUpload.Count > 0)
+                foreach (DiskManager d in diskList)
                 {
-                    lock (_lock)
+                    if (!d.thread.IsAlive)
                     {
-                        foreach (DiskManager d in diskList)
+                        if (smallFileSize.Count > 0)
                         {
-                            if (!d.thread.IsAlive)
-                            {
-                              
-
-                                d.thread.Start(pathToFile);
-                            }
+                            d.thread.Start(smallFileSize.Dequeue());
+                        }
+                        else if (mediumFileSize.Count > 0)
+                        {
+                            d.thread.Start(mediumFileSize.Dequeue());
+                        }
+                        else if (largeFileSize.Count > 0)
+                        {
+                            d.thread.Start(largeFileSize.Dequeue());
                         }
                     }
                 }
+
+                //if (filesToUpload.Count > 0)
+                //{
+                //    lock (_lock)
+                //    {
+                //        foreach (DiskManager d in diskList)
+                //        {
+                //            if (!d.thread.IsAlive)
+                //            {
+
+
+                //                d.thread.Start(pathToFile);
+                //            }
+                //        }
+                //    }
+                //}
 
             }
 

@@ -16,7 +16,7 @@ namespace ServerApp
         {
             this.fileName = fileName;
             this.owner = owner;
-            size = new Random().Next(1000, 10000);
+            size = new Random().Next(1000, 15000);
             Console.WriteLine("New file on server file {0}, owner {1} size {2}", fileName, owner, size);
         }
     }
