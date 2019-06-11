@@ -20,7 +20,6 @@ namespace ServerApp
         }
 
         private static List<DiskManager> diskList = new List<DiskManager>(5);
-        protected static object _lock = new object();
 
         private static List<ServerFile> filesToDownload = new List<ServerFile>();
         private static Queue<ServerFile> smallFileSize = new Queue<ServerFile>();
@@ -29,30 +28,28 @@ namespace ServerApp
 
         public void UploadFile(String filename, String username)
         {
-            lock (_lock)
+            ServerFile newFile = new ServerFile(filename, username);
+            if (newFile.size < 6000)
             {
-                ServerFile newFile = new ServerFile(filename, username);
-                if (newFile.size < 6000)
+                lock (mediumFileSize)
                 {
-                    lock (mediumFileSize)
-                    {
-                        smallFileSize.Enqueue(newFile);
-                    }
+                    smallFileSize.Enqueue(newFile);
                 }
-                else if (newFile.size >= 6000 && newFile.size < 11000)
+            }
+            else if (newFile.size >= 6000 && newFile.size < 11000)
+            {
+                lock (mediumFileSize)
                 {
-                    lock (mediumFileSize)
-                    {
-                        mediumFileSize.Enqueue(newFile);
-                    }
+                    mediumFileSize.Enqueue(newFile);
                 }
-                else
+            }
+            else
+            {
+                lock (mediumFileSize)
                 {
-                    lock (mediumFileSize)
-                    {
-                        largeFileSize.Enqueue(newFile);
-                    }
+                    largeFileSize.Enqueue(newFile);
                 }
+
             }
         }
 
