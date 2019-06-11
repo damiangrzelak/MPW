@@ -24,6 +24,8 @@ namespace ClientApp
 
         static void Main(string[] args)
         {
+            String fileName = String.Empty;
+
             if (args.Length == 2)
             {
                 clientName = args[0];
@@ -33,7 +35,7 @@ namespace ClientApp
 
                 if (Directory.Exists(pathToLocalDirectory))
                 {
-                    Console.WriteLine("Directory for {0}", clientName);
+                    Console.WriteLine("[INFO Client] Directory for {0}", clientName);
                     try
                     {
                         TcpClient client = new TcpClient(ipAdress, port);
@@ -49,15 +51,19 @@ namespace ClientApp
                         fileWatcher.CheckIfNewFileIsInLocalDirectory();
                         fileWatcher.CheckIfNewFileIsOnServer();
 
-                        Console.Write("Enter a string to send to the server: ");
-                        s = Console.ReadLine();
-                        Console.WriteLine();
-                        writer.WriteLine(s);
-                        writer.Flush();
-                        String server_string = reader.ReadLine();
-                        Console.WriteLine(server_string);
-                        //TO do download file
-
+                        while (!(fileName = reader.ReadLine()).Equals("Exit") || (fileName == null))
+                        {
+                            //File from server
+                            if (fileName[0] == 'n')
+                            {
+                                fileName = fileName.Substring(1);
+                                fileWatcher.CreateNewFileInLocalDirectory(fileName);
+                            }
+                            else
+                            {
+                                Console.WriteLine("[INFO Client] Unexpected message from server");
+                            }
+                        }
 
                         //close connection
                         reader.Close();
@@ -66,13 +72,12 @@ namespace ClientApp
                     }
                     catch (Exception e)
                     {
-                        Console.WriteLine(e);
+                        Console.WriteLine("[Error Client] " + e);
                     }
-
                 }
                 else
                 {
-                    Console.WriteLine("Błędna lokalizacja folderu!");
+                    Console.WriteLine("[ERROR Client] Błędna lokalizacja folderu!");
                     return;
                 }
 

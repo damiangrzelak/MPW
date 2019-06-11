@@ -53,15 +53,13 @@ namespace ClientApp
             // Allows events to fire.
             fileSystemWatcher.EnableRaisingEvents = true;
 
-            Console.WriteLine("INFO [FM] Start observe {0}", pathToDirectory);
+            Console.WriteLine("[INFO FM] Start observe {0}", pathToDirectory);
         }
 
         private void FileSystemWatcher_Created(object sender, FileSystemEventArgs e)
         {
-            Console.WriteLine("INFO [FM] New file created" + e.Name);
-            String str = String.Empty;
-            writer.WriteLine(e.Name);
-            writer.Flush();
+            Console.WriteLine("[INFO FM] New file created" + e.Name);
+            UploadFile(e.Name);
             AddNewFileToList(e.Name);
         }
 
@@ -107,7 +105,7 @@ namespace ClientApp
 
         private void PrintAllFilesFromLocalDirectory()
         {
-            Console.WriteLine("INFO [FM] Files in local directory: ");
+            Console.WriteLine("[INFO FM] Files in local directory: ");
             foreach (String fn in localFiles)
             {
                 Console.WriteLine(fn);
@@ -116,16 +114,31 @@ namespace ClientApp
 
         private void UploadFile(String filename)
         {
-            Console.WriteLine("INFO [FM] Upload file " + filename);
+            Console.WriteLine("[INFO FM] Request upload file " + filename);
             writer.WriteLine( "u" + filename);
             writer.Flush();
         }
 
         private void DownloadFile(String filename)
         {
-            Console.WriteLine("INFO [FM] Download file " + filename);
+            Console.WriteLine("[INFO FM] Request download file " + filename);
             writer.WriteLine("d" + filename);
             writer.Flush();
+        }
+
+        public void CreateNewFileInLocalDirectory(String filename)
+        {
+            String pathToFile = pathToDirectory + "\\" + filename;
+            if (!File.Exists(pathToFile))
+            {
+                Console.WriteLine("[INFO FM] New file downloaded from server " + filename);
+                //File.Create(pathToFile);
+            }
+            else if (File.Exists(pathToFile))
+            {
+                Console.WriteLine("[ERROR FM] This file already exist " + filename);
+            }
+
         }
     }
 }

@@ -93,9 +93,6 @@ namespace ServerApp
                             Console.WriteLine("[ERROR Server] Error while read msg from{0}: {1}", clientName, fileName);
                             break;
                     }
-
-
-                    //writer.WriteLine("From server -> " + );
                     writer.Flush();
                 }
 

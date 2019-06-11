@@ -32,39 +32,130 @@ namespace ServerApp
             lock (_lock)
             {
                 ServerFile newFile = new ServerFile(filename, username);
-                if (newFile.size < 6) smallFileSize.Enqueue(newFile);
-                else if (newFile.size >= 6 && newFile.size < 11) mediumFileSize.Enqueue(newFile);
-                else largeFileSize.Enqueue(newFile);
+                if (newFile.size < 6000)
+                {
+                    lock (mediumFileSize)
+                    {
+                        smallFileSize.Enqueue(newFile);
+                    }
+                }
+                else if (newFile.size >= 6000 && newFile.size < 11000)
+                {
+                    lock (mediumFileSize)
+                    {
+                        mediumFileSize.Enqueue(newFile);
+                    }
+                }
+                else
+                {
+                    lock (mediumFileSize)
+                    {
+                        largeFileSize.Enqueue(newFile);
+                    }
+                }
             }
         }
 
         private static void WriteResourceHandler()
         {
+            //Thread.Sleep(5000);
             Console.WriteLine("[INFO RM] Write Resource Handler Start Working");
+
             while (true)
             {
                 foreach (DiskManager d in diskList)
                 {
                     if (d.thread.ThreadState == ThreadState.Unstarted)
                     {
+                        int smallCount = 0;
+                        int mediumCount = 0;
+                        int largeCount = 0;
+                        CalculateCapacity(ref smallCount, ref mediumCount, ref largeCount);
+
                         if (smallFileSize.Count > 0)
                         {
-                            d.thread.Start(smallFileSize.Dequeue());
+                            if ((smallCount > 2) && (mediumFileSize.Count > 0 || largeFileSize.Count > 0))
+                            {
+                                if (mediumCount < largeCount)
+                                {
+                                    lock (mediumFileSize)
+                                    {
+                                        RunThread(d, mediumFileSize.Dequeue(), FileSizeE.MEDIUM);
+                                    }
+                                }
+                                else
+                                {
+                                    lock (largeFileSize)
+                                    {
+                                        RunThread(d, largeFileSize.Dequeue(), FileSizeE.LARGE);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                lock (smallFileSize)
+                                {
+                                    RunThread(d, smallFileSize.Dequeue(), FileSizeE.SMALL);
+                                }
+                            }
                         }
                         else if (mediumFileSize.Count > 0)
                         {
-                            d.thread.Start(mediumFileSize.Dequeue());
+                            if ((mediumCount > 1) && (largeFileSize.Count > 0))
+                            {
+                                lock (largeFileSize)
+                                {
+                                    RunThread(d, largeFileSize.Dequeue(), FileSizeE.LARGE);
+                                }
+                            }
+                            else
+                            {
+                                lock (mediumFileSize)
+                                {
+                                    RunThread(d, mediumFileSize.Dequeue(), FileSizeE.MEDIUM);
+                                }
+                            }
+
                         }
                         else if (largeFileSize.Count > 0)
                         {
-                            d.thread.Start(largeFileSize.Dequeue());
+                            lock (largeFileSize)
+                            {
+
+                                RunThread(d, largeFileSize.Dequeue(), FileSizeE.LARGE);
+                            }
                         }
                     }
                 }
             }
-
         }
 
+        private static void RunThread(DiskManager disk, ServerFile serverFile, FileSizeE fs)
+        {
+            disk.currentFileSize = fs;
+            disk.thread.Start(serverFile);
+        }
+
+        private static void CalculateCapacity(ref int smallCount, ref int mediumCount, ref int largeCount)
+        {
+            foreach (DiskManager fs in diskList)
+            {
+                switch (fs.currentFileSize)
+                {
+                    case FileSizeE.SMALL:
+                        smallCount++;
+                        break;
+                    case FileSizeE.MEDIUM:
+                        mediumCount++;
+                        break;
+                    case FileSizeE.LARGE:
+                        largeCount++;
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
 
         public void DownloadFile(String filename, String username)
         {
@@ -72,7 +163,6 @@ namespace ServerApp
 
             Thread thread = new Thread(ReadResourceHandler);
             thread.Start(fileToDownload);
-            thread.Join();
         }
 
         private static void ReadResourceHandler(object fileToDownload)
@@ -131,7 +221,6 @@ namespace ServerApp
                     Console.WriteLine("[ERROR RM] The process failed: {0}", e.ToString());
                     return false;
                 }
-
                 diskList.Add(new DiskManager(pathToDisk, pathToFile));
             }
             Thread thread = new Thread(WriteResourceHandler);
