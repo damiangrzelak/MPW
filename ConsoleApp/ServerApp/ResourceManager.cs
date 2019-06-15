@@ -49,7 +49,6 @@ namespace ServerApp
                 {
                     largeFileSize.Enqueue(newFile);
                 }
-
             }
         }
 
@@ -69,56 +68,43 @@ namespace ServerApp
                         int largeCount = 0;
                         CalculateCapacity(ref smallCount, ref mediumCount, ref largeCount);
 
-                        if (smallFileSize.Count > 0)
+                        lock (smallFileSize) lock (mediumFileSize) lock (largeFileSize)
                         {
-                            if ((smallCount > 2) && (mediumFileSize.Count > 0 || largeFileSize.Count > 0))
+                            if (smallFileSize.Count > 0)
                             {
-                                if (mediumCount < largeCount)
+                                if ((smallCount > 2) && (mediumFileSize.Count > 0 || largeFileSize.Count > 0))
                                 {
-                                    lock (mediumFileSize)
+                                    if (mediumCount < largeCount && (mediumFileSize.Count > 0))
                                     {
                                         RunThread(d, mediumFileSize.Dequeue(), FileSizeE.MEDIUM);
+                                    }
+                                    else if (mediumCount > largeCount && (largeFileSize.Count > 0))
+                                    {
+                                        RunThread(d, largeFileSize.Dequeue(), FileSizeE.LARGE);
+                                    }
+                                    else
+                                    {
+                                        RunThread(d, smallFileSize.Dequeue(), FileSizeE.SMALL);
                                     }
                                 }
                                 else
                                 {
-                                    lock (largeFileSize)
-                                    {
-                                        RunThread(d, largeFileSize.Dequeue(), FileSizeE.LARGE);
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                lock (smallFileSize)
-                                {
                                     RunThread(d, smallFileSize.Dequeue(), FileSizeE.SMALL);
                                 }
                             }
-                        }
-                        else if (mediumFileSize.Count > 0)
-                        {
-                            if ((mediumCount > 1) && (largeFileSize.Count > 0))
+                            else if (mediumFileSize.Count > 0)
                             {
-                                lock (largeFileSize)
+                                if ((mediumCount > 1) && (largeFileSize.Count > 0))
                                 {
                                     RunThread(d, largeFileSize.Dequeue(), FileSizeE.LARGE);
                                 }
-                            }
-                            else
-                            {
-                                lock (mediumFileSize)
+                                else
                                 {
                                     RunThread(d, mediumFileSize.Dequeue(), FileSizeE.MEDIUM);
                                 }
                             }
-
-                        }
-                        else if (largeFileSize.Count > 0)
-                        {
-                            lock (largeFileSize)
+                            else if (largeFileSize.Count > 0)
                             {
-
                                 RunThread(d, largeFileSize.Dequeue(), FileSizeE.LARGE);
                             }
                         }

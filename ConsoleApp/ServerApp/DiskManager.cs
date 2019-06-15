@@ -26,9 +26,10 @@ namespace ServerApp
         {
             if (file is ServerFile f)
             {
-                Console.WriteLine("[DM INFO] Write to disk:: {0} file:: {1} owner:: {2} size::{3}", pathToXMLFile, f.owner, f.fileName, currentFileSize);
+                Console.WriteLine("[DM INFO] Write to disk:: {0} file:: {1} owner:: {2} size::{3}", pathToXMLFile, f.fileName, f.owner, currentFileSize);
                 Thread.Sleep(f.size);
-                //CSVFileManager.WriteToCSVFile(pathToXMLFile, f.owner, f.fileName);
+                //Zapis do pliku
+                CSVFileManager.WriteToCSVFile(pathToXMLFile, f.owner, f.fileName);
                 Console.WriteLine("[DM INFO] File {0} saved.", f.fileName);
                 currentFileSize = FileSizeE.FREE;
                 thread = new Thread(WriteToFile);

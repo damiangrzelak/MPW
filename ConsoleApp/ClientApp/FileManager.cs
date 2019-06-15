@@ -132,6 +132,7 @@ namespace ClientApp
             if (!File.Exists(pathToFile))
             {
                 Console.WriteLine("[INFO FM] New file downloaded from server " + filename);
+                //Zapis do folderu uzytytkownika
                 //File.Create(pathToFile);
             }
             else if (File.Exists(pathToFile))
